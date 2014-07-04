@@ -1,6 +1,5 @@
-var express    = require('express')
+var express      = require('express')
   , app          = express()
-  , port         = process.env.PORT || 8080
   , path         = require('path')
   , logger       = require('morgan')
   , bodyParser   = require('body-parser')
@@ -19,5 +18,4 @@ app.use(express.static(path.join(__dirname, 'public')));
 var routes = require('./routes/index');
 app.use('/', routes);
 
-app.listen(port);
-console.log('Welcome to fun on port ' + port);
+module.exports = app;
