@@ -18,6 +18,23 @@ var CommentBox = React.createClass({
       }.bind(this)
     });
   },
+  handleCommentSubmit: function(comment) {
+    var comments    = this.state.data;
+    var newComments = comments.concat([comment]);
+    this.setState({data: newComments});
+    $.ajax({
+      url: this.props.url,
+      dataType: 'json',
+      type: 'POST',
+      data: comment,
+      success: function(data) {
+        this.setState({data: data.comments});
+      }.bind(this),
+      error: function(xhr, status, err) {
+        console.error(this.props.url, status, err.toString());
+      }.bind(this)
+    });
+  },
   getInitialState: function() {
     return {data: []};
   },
@@ -30,7 +47,7 @@ var CommentBox = React.createClass({
       <div className="commentBox">
         <h1>Comments</h1>
         <CommentList data={this.state.data} />
-        <CommentForm />
+        <CommentForm onCommentSubmit={this.handleCommentSubmit} />
       </div>
     );
   }
@@ -54,13 +71,25 @@ var CommentList = React.createClass({
 });
 
 var CommentForm = React.createClass({
+  handleSubmit: function() {
+    var author = this.refs.author.getDOMNode().value.trim()
+      , text   = this.refs.text.getDOMNode().value.trim();
+    if (!text || !author) {
+      return false;
+    }
+    // onCommentSubmit comes from CommentBox.handleComentSubmit()
+    this.props.onCommentSubmit({author: author, text: text});
+    this.refs.author.getDOMNode().value = '';
+    this.refs.text.getDOMNode().value = '';
+    return false;
+  },
   render: function() {
     return (
-      <form action="/comments" method="post">
-        <div className="commentForm form-group">
-          <input type="text" className="form-control" placeholder="Your name" />
-          <input type="text" className="form-control" placeholder="Say something..." />
-          <button type="submit" className="btn btn-success btn-lg">Submit</button>
+      <form className="commentForm" onSubmit={this.handleSubmit}>
+        <div className="form-group">
+          <input type="text" className="form-control" placeholder="Your name" ref="author" />
+          <input type="text" className="form-control" placeholder="Say something..." ref="text" />
+          <input type="submit" value="Post" className="btn btn-success btn-lg" />
         </div>
       </form>
     );
@@ -82,6 +111,6 @@ var Comment = React.createClass({
 });
 
 React.renderComponent(
-  <CommentBox url="comments" pollInterval={2000} />,
+  <CommentBox url="comments" pollInterval={5000} />,
   document.getElementById('content')
 );
