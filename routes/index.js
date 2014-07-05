@@ -7,4 +7,12 @@ router.get('/', function(req, res) {
   });
 });
 
+router.get('/comments', function(req, res) {
+  res.json({ comments: [
+      {'author': 'Bilinda', 'text': 'Show me all your favorite things.'},
+      {'author': 'Prescott', 'text': 'Show me all *yours* too?'}
+    ]
+  });
+});
+
 module.exports = router;

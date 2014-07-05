@@ -1,11 +1,35 @@
 /** @jsx React.DOM */
+var converter = new Showdown.converter();
+var data = [
+  {author: "Prescott", text: "This is one comment"},
+  {author: "Bilinda", text: "This is *another* comment"}
+];
 
 var CommentBox = React.createClass({
+  loadCommentsFromServer: function() {
+    $.ajax({
+      url: this.props.url,
+      dataType: 'json',
+      success: function(data) {
+        this.setState({data: data.comments});
+      }.bind(this),
+      error: function(xhr, status, err) {
+        console.error(this.props.url, status, err.toString());
+      }.bind(this)
+    });
+  },
+  getInitialState: function() {
+    return {data: []};
+  },
+  componentWillMount: function() {
+    this.loadCommentsFromServer();
+    setInterval(this.loadCommentsFromServer, this.props.pollInterval);
+  },
   render: function() {
     return (
       <div className="commentBox">
         <h1>Comments</h1>
-        <CommentList />
+        <CommentList data={this.state.data} />
         <CommentForm />
       </div>
     );
@@ -14,12 +38,18 @@ var CommentBox = React.createClass({
 
 var CommentList = React.createClass({
   render: function() {
+    var commentNodes = this.props.data.map(function (comment) {
+      return (
+        <Comment author={comment.author}>
+          {comment.text}
+        </Comment>
+      );
+    });
     return (
       <div className="commentList">
-        <Comment author="Bilinda">Tell me all your favorite things.</Comment>
-        <Comment author="Prescott">Tell me all yours too?</Comment>
+        {commentNodes}
       </div>
-    );
+    )
   }
 });
 
@@ -35,17 +65,19 @@ var CommentForm = React.createClass({
 
 var Comment = React.createClass({
   render: function() {
+    var rawMarkup = converter.makeHtml(this.props.children.toString());
     return (
       <div className="comment">
         <h2 className="commentAuthor">
           {this.props.author}
         </h2>
-        {this.props.children}
+        <span dangerouslySetInnerHTML={{__html: rawMarkup}} />
       </div>
     );
   }
 });
+
 React.renderComponent(
-  <CommentBox />,
+  <CommentBox url="comments" pollInterval={2000} />,
   document.getElementById('content')
 );

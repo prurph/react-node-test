@@ -1,9 +1,10 @@
 {
-  "name": "react-node-test",
-  "version": "0.0.1",
-  "dependencies": {
-    "jquery": "*",
-    "bootstrap": "*",
-    "react": "*"
+  "name"         : "react-node-test",
+  "version"      : "0.0.1",
+  "dependencies" : {
+    "jquery"       : "*",
+    "bootstrap"    : "*",
+    "react"        : "*",
+    "showdown"     : "*"
   }
 }
