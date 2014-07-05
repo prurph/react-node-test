@@ -6,7 +6,7 @@ var returnComments = function(res) {
   Comment.find({}, function(err, comments) {
     if (err)
       throw new Error(err);
-    res.json({ comments : comments });
+    res.json(200, { comments : comments });
   });
 };
 
@@ -21,7 +21,7 @@ router.post('/', function(req, res){
 
   newComment.save(function(err) {
     if (err)
-      res.send(err);
+      res.send(500, err);
     // TODO: just update the collection if success instead of returning whole thing
     returnComments(res);
   });
@@ -33,7 +33,7 @@ router.route('/:comment_id')
       _id : req.params.comment_id
     }, function(err, comment) {
       if (err)
-        res.send(err);
+        res.send(500, err);
       // TODO: just update the collection if success instead of returning whole thing
       returnComments(res);
     });
