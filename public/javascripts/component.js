@@ -35,6 +35,19 @@ var CommentBox = React.createClass({
       }.bind(this)
     });
   },
+  handleCommentDelete: function(commentId) {
+    $.ajax({
+      url: this.props.url + '/' + commentId,
+      dataType: 'json',
+      type: 'DELETE',
+      success: function(data) {
+        this.setState({data: data.comments});
+      }.bind(this),
+      error: function(xhr, status, err) {
+        console.error(this.props.url, status, err.toString());
+      }.bind(this)
+    });
+  },
   getInitialState: function() {
     return {data: []};
   },
@@ -46,7 +59,7 @@ var CommentBox = React.createClass({
     return (
       <div className="commentBox">
         <h1>Comments</h1>
-        <CommentList data={this.state.data} />
+        <CommentList data={this.state.data} onCommentDelete={this.handleCommentDelete} />
         <CommentForm onCommentSubmit={this.handleCommentSubmit} />
       </div>
     );
@@ -57,11 +70,12 @@ var CommentList = React.createClass({
   render: function() {
     var commentNodes = this.props.data.map(function (comment) {
       return (
-        <Comment author={comment.author}>
+        <Comment author={comment.author} commentId={comment._id} onCommentDelete={this.props.onCommentDelete}>
           {comment.text}
         </Comment>
       );
-    });
+    // bind this because otherwise no access to this.props.onCommentDelete
+    }.bind(this));
     return (
       <div className="commentList">
         {commentNodes}
@@ -97,6 +111,10 @@ var CommentForm = React.createClass({
 });
 
 var Comment = React.createClass({
+  handleDelete: function() {
+    this.props.onCommentDelete(this.props.commentId);
+    return false;
+  },
   render: function() {
     var rawMarkup = converter.makeHtml(this.props.children.toString());
     return (
@@ -105,6 +123,9 @@ var Comment = React.createClass({
           {this.props.author}
         </h2>
         <span dangerouslySetInnerHTML={{__html: rawMarkup}} />
+        <div>
+          <button className="btn btn-danger btn-sm" onClick={this.handleDelete}>Delete</button>
+        </div>
       </div>
     );
   }

@@ -2,10 +2,16 @@ var express = require('express')
   , router  = express.Router()
   , Comment = require('../models/comment');
 
-router.get('/', function(req, res) {
+var returnComments = function(res) {
   Comment.find({}, function(err, comments) {
+    if (err)
+      throw new Error(err);
     res.json({ comments : comments });
   });
+};
+
+router.get('/', function(req, res) {
+  returnComments(res);
 });
 
 router.post('/', function(req, res){
@@ -15,11 +21,22 @@ router.post('/', function(req, res){
 
   newComment.save(function(err) {
     if (err)
-      throw new Error(err);
-    Comment.find({}, function(err, comments) {
-      res.json({ comments : comments });
-    });
+      res.send(err);
+    // TODO: just update the collection if success instead of returning whole thing
+    returnComments(res);
   });
 });
+
+router.route('/:comment_id')
+  .delete(function(req, res) {
+    Comment.remove({
+      _id : req.params.comment_id
+    }, function(err, comment) {
+      if (err)
+        res.send(err);
+      // TODO: just update the collection if success instead of returning whole thing
+      returnComments(res);
+    });
+  });
 
 module.exports = router;
